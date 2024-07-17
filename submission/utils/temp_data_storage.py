@@ -34,7 +34,7 @@ class Storage:
             existing_data["Changelog"] = []
         existing_data["Changelog"].append(
             {
-                "Edited_by": current_user.id,
+                "Edited_by": current_user.get_id(),
                 "Edited_at": datetime.datetime.now(datetime.timezone.utc).strftime(
                     "%m/%d/%Y, %H:%M:%S"
                 ),

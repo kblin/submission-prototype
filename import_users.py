@@ -88,7 +88,7 @@ def main():
     if args.mode == "submitters-dummy":
         app = create_app()
         with app.app_context():
-            submitters = Role.query.filter_by(slug="submitter").one()
+            submitters = Role.query.filter_by(name="submitter").one()
             users = User.query.all()
             for user in users:
                 if submitters not in user.roles:

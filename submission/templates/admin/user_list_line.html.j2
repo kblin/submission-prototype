@@ -3,8 +3,8 @@
     <td>{{user.email}}</td>
     <td>{{user.info.alias}}</td>
     <td>{{user.active}}</td>
-    <td>{{user.roles|map(attribute="slug")|join(", ")}}</td>
-    <td><button class="btn btn-danger" hx-get="{{url_for('admin.user_edit', user_id=user.id)}}" hx-trigger="edit"
+    <td>{{user.roles|map(attribute="name")|join(", ")}}</td>
+    <td><button class="btn btn-danger" hx-get="{{url_for('admin.user_edit', user_id=user.get_id())}}" hx-trigger="edit"
             onClick="let editing = document.querySelector('.editing');
                          if(editing) {
                              if(window.confirm('Hey! You are already editing a row! Do you want to cancel that edit and continue?')) {

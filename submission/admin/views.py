@@ -37,11 +37,11 @@ def user(user_id: int) -> str:
 @bp_admin.route("/user/<user_id>/edit", methods=["GET", "PUT"])
 def user_edit(user_id: int) -> str:
     user = User.query.get_or_404(user_id)
-    all_roles = Role.query.order_by(Role.slug).all()
+    all_roles = Role.query.order_by(Role.name).all()
     form = UserEdit(request.form, data={
         "email": user.email,
     })
-    form.roles.choices = [(role.slug, role.name) for role in all_roles]
+    form.roles.choices = [(role.name, role.name) for role in all_roles]
 
     if form.validate_on_submit():
         user.email = form.email.data
@@ -49,14 +49,14 @@ def user_edit(user_id: int) -> str:
         roles = []
         for wanted_role in form.roles.data:
             for role in all_roles:
-                if role.slug == wanted_role:
+                if role.name == wanted_role:
                     roles.append(role)
         user.roles = roles
         db.session.add(user)
         db.session.commit()
         return render_template("admin/user_list_line.html.j2", user=user)
 
-    form.roles.data = [role.slug for role in user.roles]
+    form.roles.data = [role.name for role in user.roles]
     form.active.data = user.active
 
     return render_template("admin/user_edit_form.html.j2", form=form, user=user)
@@ -65,8 +65,8 @@ def user_edit(user_id: int) -> str:
 @bp_admin.route("/user/new", methods=["GET", "POST"])
 def user_create() -> str:
     form = UserAdd(request.form)
-    all_roles = Role.query.order_by(Role.slug).all()
-    form.roles.choices = [(role.slug, role.name) for role in all_roles]
+    all_roles = Role.query.order_by(Role.name).all()
+    form.roles.choices = [(role.name, role.name) for role in all_roles]
 
     if form.validate_on_submit():
         user = User(email=form.email.data, active=form.active.data, _password="deactivated")
@@ -83,7 +83,7 @@ def user_create() -> str:
         db.session.add(info)
         for wanted_role in form.roles.data:
             for role in all_roles:
-                if role.slug == wanted_role:
+                if role.name == wanted_role:
                     user.roles.append(role)
         db.session.add(user)
         db.session.commit()

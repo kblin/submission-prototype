@@ -10,24 +10,24 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
     __table_args__ = {"schema": "auth"}
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     active: Mapped[bool] = mapped_column(nullable=False, default=False)
-    _password: Mapped[str] = mapped_column(nullable=False)
+    password_hash: Mapped[str] = mapped_column(nullable=False)
 
     roles: Mapped[list["Role"]] = db.relationship(
-        "Role", secondary="auth.user_roles", back_populates="users", lazy="selectin"
+        "Role", secondary="auth.rel_user_roles", back_populates="users", lazy="selectin"
     )
 
     info: Mapped["UserInfo"] = db.relationship("UserInfo")
 
     @hybrid_property
     def password(self):
-        return self._password
+        return self.password_hash
 
     @password.setter
     def password(self, password):
-        self._password = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password)
 
     def check_password(self, password) -> bool:
         return check_password_hash(self.password, password)
@@ -35,49 +35,51 @@ class User(UserMixin, db.Model):
     def has_role(self, role) -> bool:
         return bool(
             Role.query.join(Role.users)
-            .filter(User.id == self.id)
-            .filter(Role.slug == role)
+            .filter(User.user_id == self.user_id)
+            .filter(Role.name == role)
             .count()
             == 1
         )
+    def get_id(self):
+        return self.user_id
 
 
 class Role(db.Model):
     __tablename__ = "roles"
     __table_args__ = {"schema": "auth"}
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    role_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(nullable=False)
-    slug: Mapped[str] = mapped_column(nullable=False, unique=True)
+    description: Mapped[str] = mapped_column(nullable=False, unique=True)
 
     users: Mapped[list["User"]] = db.relationship(
-        "User", secondary="auth.user_roles", back_populates="roles", lazy="selectin"
+        "User", secondary="auth.rel_user_roles", back_populates="roles", lazy="selectin"
     )
 
     def __str__(self) -> str:
         return self.name
 
     def __repr__(self) -> str:
-        return f"Role('{self.name}', '{self.slug}')"
+        return f"Role('{self.name}', '{self.description}')"
 
 
 class UserRole(db.Model):
-    __tablename__ = "user_roles"
+    __tablename__ = "rel_user_roles"
     __table_args__ = {"schema": "auth"}
 
-    user_id: Mapped[int] = mapped_column(db.ForeignKey("auth.users.id"), primary_key=True)
-    role_id: Mapped[int] = mapped_column(db.ForeignKey("auth.roles.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("auth.users.user_id"), primary_key=True)
+    role_id: Mapped[int] = mapped_column(db.ForeignKey("auth.roles.role_id"), primary_key=True)
 
 
 class UserInfo(db.Model):
     __tablename__ = "user_info"
     __table_args__ = {"schema": "auth"}
 
-    id: Mapped[int] = mapped_column(db.ForeignKey("auth.users.id"), primary_key=True)
+    user_id: Mapped[int] = mapped_column(db.ForeignKey("auth.users.user_id"), primary_key=True)
     alias: Mapped[str] = mapped_column(nullable=False, unique=True)
     name: Mapped[str] = mapped_column(nullable=False)
     call_name: Mapped[str] = mapped_column(nullable=False)
-    organisation: Mapped[str] = mapped_column(nullable=False)
+    organisation_1: Mapped[str] = mapped_column(nullable=False)
     organisation_2: Mapped[str] = mapped_column(nullable=True)
     organisation_3: Mapped[str] = mapped_column(nullable=True)
     orcid: Mapped[str] = mapped_column(nullable=True, unique=True)
