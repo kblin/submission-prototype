@@ -92,6 +92,8 @@ class Reference(db.Model):
             reference (str): reference formatted as doi:10... | pubmed:73...
         """
         if reference.startswith("doi:") or reference.startswith("pubmed:"):
+            if reference == "doi:pending":
+                return None
             # distinguish Biorxiv and Chemrxiv dois
             if reference.startswith("doi:10.1101/"):
                 metadata = Reference.get_biorxiv_metadata(reference)
@@ -136,6 +138,8 @@ class Reference(db.Model):
             ref = Reference.get(reference)
             if ref is None:
                 ref = Reference.load(reference)
+                if ref is None:
+                    continue
             refs.append(ref)
         return refs
 
