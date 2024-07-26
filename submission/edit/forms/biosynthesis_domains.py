@@ -87,11 +87,6 @@ class CarrierDomain(Form):
     location = FormField(location_form_factory())
     inactive = BooleanField("Inactive?")
     beta_branching = BooleanField("Beta-branching?")
-    evidence = FieldList(
-        FormField(SubtrateEvidenceForm),
-        min_entries=1,
-        widget=FieldListAddBtn(label="Add additional evidence"),
-    )
 
 
 class AminotransferaseDomain(Form):
